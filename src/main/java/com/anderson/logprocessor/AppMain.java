@@ -69,10 +69,10 @@ public class AppMain {
             return null;
         })
         .filter(Objects::nonNull)
+        // sort them using a comparator which uses the timestamp from first line of each of the files
+        .sorted()
         .collect(Collectors.toList());
 
-        // sort them using a comparator which uses the timestamp from first line of each of the files
-        Collections.sort(collect);
         return collect;
     }
 }
