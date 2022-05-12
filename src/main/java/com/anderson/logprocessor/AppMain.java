@@ -37,10 +37,7 @@ public class AppMain {
                     break;
                 }
             }
-            logRows = logRows.stream()
-                    .filter(e -> e.getCurrentLine()!=null)
-                    .sorted()
-                    .collect(Collectors.toList());
+            binarySearchInsertion(logRows);
         }
 
         System.out.println(logRows.get(0).getCurrentLine());
@@ -49,14 +46,34 @@ public class AppMain {
             System.out.println(logRows.get(0).getLineIterator().nextLine());
             count++;
         }
-        System.out.println(count);
+        System.out.println("Total Rows Count: " + count);
+    }
+
+    // we move the first element to its proper position using binary search + insertion
+    private static void binarySearchInsertion(List<LogRow> logRows) {
+        var firstLogRow = logRows.remove(0);
+        if (firstLogRow.getCurrentLine() != null) {
+            // position to insert the previous first element of the list.
+            int i = Collections.binarySearch(logRows, firstLogRow, LogRow.logRowComparable());
+            if (i > 0) {
+                logRows.add(i, firstLogRow);
+            } else {
+                int index = -1 * i - 1;
+                // if index == 0, means only 2 elements in the list, swap first with second
+                if (index == 0) {
+                    logRows.add(1, firstLogRow);
+                } else {
+                    logRows.add(index, firstLogRow);
+                }
+            }
+        }
     }
 
     private static List<LogRow> getLogRows() {
         var pathname = "src/main/resources/generated/logs/";
         var fileNames = Arrays.asList(Objects.requireNonNull(new File(pathname).list()));
 
-        List<LogRow> collect = fileNames.stream().map(file -> {
+        return fileNames.stream().map(file -> {
             try {
                 var lineIterator = FileUtils.lineIterator(new File(pathname + file), "UTF-8");
                 // don't add empty files, return null that would be filtered out in the filter below
@@ -72,7 +89,5 @@ public class AppMain {
         // sort them using a comparator which uses the timestamp from first line of each of the files
         .sorted()
         .collect(Collectors.toList());
-
-        return collect;
     }
 }
